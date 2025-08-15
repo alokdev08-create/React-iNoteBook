@@ -3,18 +3,18 @@ import axios from "axios";
 import { Container, Form, Button, Alert, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import Toster from "./Toster"; // ✅ Toast container
+import Toster from "./Toster";
+
+const API_BASE = process.env.REACT_APP_API_URL;
 
 const SignUp = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  //const [roleName, setRoleName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [photo, setPhoto] = useState(null); // ✅ file object
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [photo, setPhoto] = useState("");
-  
 
   const navigate = useNavigate();
 
@@ -24,16 +24,20 @@ const SignUp = () => {
     setSuccessMsg("");
 
     try {
-      await axios.post("http://localhost:5000/api/auth/register", {
-        name,
-        email,
-        password,
-        roleName: "admin", // Default role for simplicity,
-        mobile,
-        photo,
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("roleName", "admin"); // Default role
+      formData.append("mobile", mobile);
+      if (photo) formData.append("photo", photo);
+
+      await axios.post(`${API_BASE}/auth/register`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
-   //   setSuccessMsg("Registration successful! Redirecting to login...");
       toast.success("Registration successful");
       setTimeout(() => navigate("/login"), 1500);
     } catch (error) {
@@ -85,14 +89,6 @@ const SignUp = () => {
             />
           </Form.Group>
 
-          {/* <Form.Group className="mb-4" controlId="formRole">
-            <Form.Label>Role</Form.Label>
-            <Form.Select value={roleName} onChange={(e) => setRoleName(e.target.value)} required>
-              <option value="">Select role</option>
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </Form.Select>
-          </Form.Group> */}
           <Form.Group className="mb-3" controlId="formMobile">
             <Form.Label>Mobile Number</Form.Label>
             <Form.Control
@@ -103,16 +99,16 @@ const SignUp = () => {
               required
             />
           </Form.Group>
+
           <Form.Group className="mb-3" controlId="formPhoto">
             <Form.Label>Upload Photo</Form.Label>
             <Form.Control
-               type="file"
-               accept="image/*"
-              placeholder="Enter photo URL"
-              value={photo}
-              onChange={(e) => setPhoto(e.target.value)}
+              type="file"
+              accept="image/*"
+              onChange={(e) => setPhoto(e.target.files[0])} // ✅ file object
             />
           </Form.Group>
+
           <div className="d-grid">
             <Button variant="primary" type="submit">
               Sign Up
@@ -120,10 +116,7 @@ const SignUp = () => {
           </div>
         </Form>
 
-        <p
-          className="mt-3 text-muted text-center"
-          style={{ fontSize: "0.9rem" }}
-        >
+        <p className="mt-3 text-muted text-center" style={{ fontSize: "0.9rem" }}>
           Already have an account? Log in to start using iNoteBook.
         </p>
       </Card>
