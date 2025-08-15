@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Container, Form, Button, Alert, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import Toster from "./Toster"; // ✅ Toast container
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -24,16 +26,19 @@ const Login = () => {
 
       const { accessToken } = response.data;
       localStorage.setItem("token", accessToken);
-      setSuccessMsg("Login successful! Redirecting...");
-      setTimeout(() => navigate("/notes"), 1500);
+      //setSuccessMsg("Login successful! Redirecting...");
+      toast.success("Login successfully");
+      setTimeout(() => navigate("/notes"), 1000);
 
     } catch (error) {
-      setErrorMsg(error.response?.data?.error || "Login failed");
+       // setErrorMsg(error.response?.data?.error || "Login failed");
+        toast.error(error.response?.data?.error);
     }
   };
 
   return (
     <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "80vh" }}>
+     <Toster />
       <Card style={{ width: "100%", maxWidth: "400px" }} className="p-4 shadow">
         <h2 className="mb-4 text-center text-primary">Login to iNoteBook</h2>
         {errorMsg && <Alert variant="danger">{errorMsg}</Alert>}

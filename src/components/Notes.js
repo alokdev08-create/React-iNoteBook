@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import axios from "axios";
 import {
   Container,
@@ -10,10 +10,16 @@ import {
   Alert,
   Spinner,
   Modal,
+  InputGroup,
 } from "react-bootstrap";
 import moment from "moment";
-
+import NoteContext from "../context/notes/NoteContext";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import Toster from "./Toster"; // ✅ Toast container
+import { toast } from "react-toastify";
+const API_BASE = process.env.REACT_APP_API_URL;
 const Notes = () => {
+  const { state } = useContext(NoteContext);
   const [notes, setNotes] = useState([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -22,13 +28,17 @@ const Notes = () => {
   const [loading, setLoading] = useState(true);
   const [showPrompt, setShowPrompt] = useState(false);
 
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
   const token = localStorage.getItem("token");
 
   // ✅ Fetch notes
   const fetchNotes = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:5000/api/notes", {
+          console.log("📡 Base API URL:", API_BASE); // ✅ Logs the actual base URL
+      const response = await axios.get(`${API_BASE}/notes`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -52,13 +62,19 @@ const Notes = () => {
     fetchNotes();
   }, [fetchNotes]);
 
+  const filteredNotes = notes.filter((note) =>
+    note.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   // ✅ Create or update note
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
 
     if (title.trim().length < 3 || content.trim().length < 1) {
-      setMessage("Title must be at least 3 characters and content cannot be empty.");
+      setMessage(
+        "Title must be at least 3 characters and content cannot be empty."
+      );
       return;
     }
 
@@ -71,22 +87,21 @@ const Notes = () => {
           payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setMessage("Note updated successfully");
+        toast.info("Note updated successfully!");
       } else {
         await axios.post("http://localhost:5000/api/notes", payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setMessage("Note created successfully");
-        setShowPrompt(true); // ✅ Show modal prompt
+        toast.success("Note created successfully!");
+        setShowPrompt(true);
       }
 
-      setTimeout(() => setMessage(""), 2000);
       setTitle("");
       setContent("");
       setEditId(null);
       fetchNotes();
     } catch (error) {
-      setMessage("Error saving note");
+      toast.error("Error saving note");
     }
   };
 
@@ -96,11 +111,10 @@ const Notes = () => {
       await axios.delete(`http://localhost:5000/api/notes/deleteNotes/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setMessage("Note deleted");
-      setTimeout(() => setMessage(""), 2000);
+      toast.success("Note deleted successfully!");
       fetchNotes();
     } catch (error) {
-      setMessage("Error deleting note");
+      toast.error("Error deleting note");
     }
   };
 
@@ -109,14 +123,37 @@ const Notes = () => {
     setTitle(note.title);
     setContent(note.content);
     setEditId(note._id);
+    toast.info("Editing note...");
   };
 
   return (
     <Container className="mt-5">
-      <h2 className="mb-4 text-primary">📝 Your Notes</h2>
+      <Toster /> {/* ✅ Toast container rendered once */}
+
+      {/* ✅ Top Row with Heading and Search */}
+      <Row className="align-items-center mb-4">
+        <Col>
+          <h2 className="text-primary">📝 Your Notes</h2>
+        </Col>
+        <Col md="auto">
+          <InputGroup>
+            <Form.Control
+              type="text"
+              placeholder="Search notes by title..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="border-info"
+            />
+            <Button variant="info" onClick={() => setSearchQuery(searchInput)}>
+              🔍 Search
+            </Button>
+          </InputGroup>
+        </Col>
+      </Row>
 
       {message && <Alert variant="info">{message}</Alert>}
 
+      {/* ✅ Note Form */}
       <Form onSubmit={handleSubmit} className="mb-4">
         <Row>
           <Col md={6}>
@@ -152,18 +189,19 @@ const Notes = () => {
         </Button>
       </Form>
 
+      {/* ✅ Notes Display */}
       {loading ? (
         <div className="text-center">
           <Spinner animation="border" variant="primary" />
         </div>
-      ) : notes.length > 0 ? (
+      ) : filteredNotes.length > 0 ? (
         <Row>
-          {notes.map((note) => (
+          {filteredNotes.map((note) => (
             <Col key={note._id} md={6} lg={4} className="mb-4">
               <Card className="shadow-sm h-100">
                 <Card.Body className="d-flex flex-column">
                   <Card.Title className="fw-bold text-dark">
-                    {note.title}
+                    {state.name} - {note.title}
                   </Card.Title>
                   <Card.Text
                     className="flex-grow-1"
@@ -179,22 +217,17 @@ const Notes = () => {
                     <small className="text-muted">
                       {moment(note.date).format("MMM D, YYYY h:mm A")}
                     </small>
-                    <div>
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => handleEdit(note)}
-                        className="me-2"
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
+                    <div className="d-flex justify-content-end align-items-center gap-3">
+                      <i
+                        className="fa-solid fa-trash text-danger"
                         onClick={() => handleDelete(note._id)}
-                      >
-                        Delete
-                      </Button>
+                        style={{ cursor: "pointer" }}
+                      ></i>
+                      <i
+                        className="fa-solid fa-pen-to-square text-primary"
+                        onClick={() => handleEdit(note)}
+                        style={{ cursor: "pointer" }}
+                      ></i>
                     </div>
                   </div>
                 </Card.Body>
@@ -203,7 +236,7 @@ const Notes = () => {
           ))}
         </Row>
       ) : (
-        <p>No notes found.</p>
+        <p>No matching notes found.</p>
       )}
 
       {/* ✅ Modal Prompt */}
@@ -211,7 +244,9 @@ const Notes = () => {
         <Modal.Header closeButton>
           <Modal.Title>Note Saved</Modal.Title>
         </Modal.Header>
-        <Modal.Body>✅ Your note was saved successfully. Want to add another?</Modal.Body>
+        <Modal.Body>
+          ✅ Your note was saved successfully. Want to add another?
+        </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowPrompt(false)}>
             No, I'm done
