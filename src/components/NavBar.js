@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Container, Nav, Navbar, Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import Toster from "./Toster"; // ✅ Toast container
+import Toster from "./Toster";
+
+const API_BASE = process.env.REACT_APP_API_URL;
 
 const NavBar = () => {
   const navigate = useNavigate();
@@ -13,8 +15,8 @@ const NavBar = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/auth/fetchUserDetails", {
-          headers: { Authorization: `Bearer ${token}` }
+        const response = await fetch(`${API_BASE}/auth/fetchUserDetails`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const data = await response.json();

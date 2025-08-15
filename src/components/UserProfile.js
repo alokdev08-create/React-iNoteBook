@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import {
   Container,
   Navbar,
-  Nav,
   Button,
   Modal,
   Form,
   Image
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+
+const API_BASE = process.env.REACT_APP_API_URL;
 
 const UserProfile = () => {
   const [user, setUser] = useState(null);
@@ -22,7 +23,7 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/auth/fetchUserDetails", {
+        const response = await fetch(`${API_BASE}/auth/fetchUserDetails`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -39,7 +40,7 @@ const UserProfile = () => {
     fetchUser();
   }, [token]);
 
-  // ✅ Handle profile update (POST with FormData)
+  // ✅ Handle profile update
   const handleUpdate = async () => {
     try {
       const formData = new FormData();
@@ -47,10 +48,10 @@ const UserProfile = () => {
       formData.append("mobile", editedUser.mobile);
       if (newPhoto) formData.append("photo", newPhoto);
 
-      const response = await fetch("http://localhost:5000/api/auth/updateProfile", {
-        method: "PUT", // ✅ changed from PUT
+      const response = await fetch(`${API_BASE}/auth/updateProfile`, {
+        method: "PUT",
         headers: {
-          Authorization: `Bearer ${token}` // ✅ no Content-Type
+          Authorization: `Bearer ${token}`
         },
         body: formData
       });
@@ -68,13 +69,13 @@ const UserProfile = () => {
     }
   };
 
-  // ✅ Handle profile deletion with confirmation
+  // ✅ Handle profile deletion
   const handleDelete = async () => {
     const confirm = window.confirm("Are you sure you want to delete your profile?");
     if (!confirm) return;
 
     try {
-      await fetch("http://localhost:5000/api/auth/deleteProfile", {
+      await fetch(`${API_BASE}/auth/deleteProfile`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -86,24 +87,18 @@ const UserProfile = () => {
     }
   };
 
-  // ✅ Construct image source with fallback
+  // ✅ Construct image source
   const getProfileImageSrc = (photo) => {
     if (!photo || photo === "default.jpg") {
       return "/default.jpg"; // served from public folder
     }
-    return `http://localhost:5000/uploads/${photo}`;
+    return `${API_BASE.replace("/api", "")}/uploads/${photo}`;
   };
 
   return (
     <>
       {/* ✅ Navbar */}
-      <Navbar bg="light" expand="lg" className="justify-content-end px-4">
-        {/* <Nav>
-          <Button variant="outline-danger" size="sm" onClick={handleDelete}>
-            Delete Profile
-          </Button>
-        </Nav> */}
-      </Navbar>
+      <Navbar bg="light" expand="lg" className="justify-content-end px-4" />
 
       {/* ✅ Profile Details */}
       <Container className="mt-5">
@@ -126,9 +121,6 @@ const UserProfile = () => {
 
             {/* ✅ Icon-based controls */}
             <div className="d-flex gap-3 align-items-center">
-              {/* <Button variant="primary" onClick={() => setShowEditModal(true)}>
-                Edit Profile
-              </Button> */}
               <i
                 className="fa-solid fa-pen-to-square text-primary"
                 onClick={() => setShowEditModal(true)}
@@ -150,9 +142,6 @@ const UserProfile = () => {
 
       {/* ✅ Edit Modal */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
-        {/* <Modal.Header closeButton>
-          <Modal.Title>Edit Profile</Modal.Title>
-        </Modal.Header> */}
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">

@@ -15,9 +15,11 @@ import {
 import moment from "moment";
 import NoteContext from "../context/notes/NoteContext";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import Toster from "./Toster"; // ✅ Toast container
+import Toster from "./Toster";
 import { toast } from "react-toastify";
+
 const API_BASE = process.env.REACT_APP_API_URL;
+
 const Notes = () => {
   const { state } = useContext(NoteContext);
   const [notes, setNotes] = useState([]);
@@ -27,7 +29,6 @@ const Notes = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [showPrompt, setShowPrompt] = useState(false);
-
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -37,7 +38,6 @@ const Notes = () => {
   const fetchNotes = useCallback(async () => {
     setLoading(true);
     try {
-          console.log("📡 Base API URL:", API_BASE); // ✅ Logs the actual base URL
       const response = await axios.get(`${API_BASE}/notes`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -83,13 +83,13 @@ const Notes = () => {
 
       if (editId) {
         await axios.put(
-          `http://localhost:5000/api/notes/updateNotes/${editId}`,
+          `${API_BASE}/notes/updateNotes/${editId}`,
           payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         toast.info("Note updated successfully!");
       } else {
-        await axios.post("http://localhost:5000/api/notes", payload, {
+        await axios.post(`${API_BASE}/notes`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
         toast.success("Note created successfully!");
@@ -108,7 +108,7 @@ const Notes = () => {
   // ✅ Delete note
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/notes/deleteNotes/${id}`, {
+      await axios.delete(`${API_BASE}/notes/deleteNotes/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Note deleted successfully!");
@@ -128,7 +128,7 @@ const Notes = () => {
 
   return (
     <Container className="mt-5">
-      <Toster /> {/* ✅ Toast container rendered once */}
+      <Toster />
 
       {/* ✅ Top Row with Heading and Search */}
       <Row className="align-items-center mb-4">
