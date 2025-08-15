@@ -15,6 +15,7 @@ const Login = () => {
 
   const navigate = useNavigate();
 
+  console.log("API_BASE:", API_BASE); // ✅ Debugging API base URL
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
