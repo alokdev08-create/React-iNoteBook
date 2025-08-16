@@ -39,7 +39,7 @@ const Notes = () => {
   const fetchNotes = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_BASE}/notes`, {
+      const response = await axios.get(`${API_BASE}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
