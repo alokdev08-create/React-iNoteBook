@@ -18,7 +18,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import Toster from "./Toster";
 import { toast } from "react-toastify";
 
-const API_BASE = process.env.REACT_APP_API_URL?.replace(/\/$/, "");
+const API_BASE = process.env.REACT_APP_API_NOTES_URL?.replace(/\/$/, "");
 
 
 const Notes = () => {

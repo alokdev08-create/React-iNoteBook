@@ -9,7 +9,7 @@ import {
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = process.env.REACT_APP_API_URL?.replace(/\/$/, "");
+const API_BASE = process.env.REACT_APP_API_AUTH_URL?.replace(/\/$/, "");
 
 
 const UserProfile = () => {
