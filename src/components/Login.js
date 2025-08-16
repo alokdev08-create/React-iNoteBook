@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Toster from "./Toster";
 
-const API_BASE = process.env.REACT_APP_API_URL?.replace(/\/$/, "");
+const API_BASE = process.env.REACT_APP_API_AUTH_URL?.replace(/\/$/, "");
 
 
 const Login = () => {
